@@ -8,7 +8,7 @@ export const getUserProfile = async (req=request, res=response) => {
   // We will fetch user profile either with username or userId
 	// query is either username or userId
 	const { query } = req.params;
-    console.log(query);
+    console.log(query); 
 	try {
 		let user;
 
