@@ -13,6 +13,12 @@ const app = express();
 const PORT = process.env.PORT || 8080
 
 app.use(cors())
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', `http://localhost:${process.env.PORT}`); // Reemplaza con la URL de tu aplicación React
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  // Otros encabezados CORS y configuraciones pueden ir aquí
+  next();
+});
 app.use(express.json()) //To parse JSON data in the req.body
 app.use(express.urlencoded({ extended: true })) // To parse form data in the req.body
 app.use(cookieParser())
