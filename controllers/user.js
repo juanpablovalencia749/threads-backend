@@ -1,14 +1,13 @@
 import { response, request } from 'express';
 import bcrypt from "bcryptjs";
 import User from '../models/User.js';
-import { generateTokenAndSetCookie } from '../helper/generateTokenandSetCookie.js';
+import { generateToken } from '../helper/generateToken.js';
 import mongoose from 'mongoose';
 
 export const getUserProfile = async (req=request, res=response) => {
   // We will fetch user profile either with username or userId
 	// query is either username or userId
 	const { query } = req.params;
-    console.log(query); 
 	try {
 		let user;
 
@@ -50,7 +49,7 @@ export const signUpUser = async (req=request, res=response) => {
 		await newUser.save();
 
 		if (newUser) {
-			generateTokenAndSetCookie(newUser._id, res);
+			const token = await	generateToken(newUser._id);
 
 			res.status(201).json({
 				_id: newUser._id,
@@ -59,7 +58,8 @@ export const signUpUser = async (req=request, res=response) => {
 				username: newUser.username,
 				bio: newUser.bio,
 				profilePic: newUser.profilePic,
-			});
+				token
+			})
 		} else {
 			res.status(400).json({ error: "Invalid user data" });
 		}
@@ -83,7 +83,7 @@ export const loginUser = async (req, res) => {
 			await user.save();
 		}
 
-		generateTokenAndSetCookie(user._id, res);
+		const token = await generateToken(user._id);
 
 		res.status(200).json({
 			_id: user._id,
@@ -92,6 +92,7 @@ export const loginUser = async (req, res) => {
 			username: user.username,
 			bio: user.bio,
 			profilePic: user.profilePic,
+			token
 		});
 	} catch (error) {
 		res.status(500).json({ error: error.message });
@@ -99,15 +100,15 @@ export const loginUser = async (req, res) => {
 	}
 }
 
-export const logoutUser =  async (req, res) => {
-  try {
-		res.cookie("jwt", "", {maxAge:1} )
-		res.status(200).json({ message: "User logged out successfully"} )
+export const renewToken = async  (req, res) => {
+  const {uid}   = req
 
-	} catch (error) {
-		res.status(500).json({ error: error.message });
-		console.log("Error in logoutUser: ", error.message);
-	}
+  const token = await  generateToken( uid )
+
+  res.status(201).json({
+		msg: "Token new",
+		token
+	});
 }
 
 export const followUser =  async (req, res) => {
